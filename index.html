@@ -1,0 +1,2759 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#080b09" />
+  <meta name="description" content="TempBox 临时邮局：自定义前缀与后缀，免费生成临时邮箱，在线收验证码和邮件，无需注册。" />
+  <title>TempBox · 临时邮局</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTYiIGZpbGw9IiMwZDEzMGUiLz4KICA8cmVjdCB4PSIxMCIgeT0iMTUiIHdpZHRoPSI0NCIgaGVpZ2h0PSIzNCIgcng9IjkiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2M5ZmY1NyIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPHBhdGggZD0iTTEyIDIxIDMyIDM2bDIwLTE1IiBmaWxsPSJub25lIiBzdHJva2U9IiNjOWZmNTciIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgPHBhdGggZD0iTTQ5IDl2OE00NSAxM2g4IiBzdHJva2U9IiM4ZGU4Y2YiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo=" type="image/svg+xml" />
+  <style>
+/* TempBox — 临时邮局 */
+:root {
+  --bg: #070a08;
+  --bg-soft: #0b100c;
+  --panel: rgba(17, 23, 19, 0.82);
+  --panel-solid: #111713;
+  --panel-raised: #161d18;
+  --line: rgba(238, 255, 235, 0.1);
+  --line-strong: rgba(238, 255, 235, 0.18);
+  --text: #f1f6ee;
+  --muted: #97a399;
+  --muted-dim: #6f7c72;
+  --lime: #c9ff57;
+  --lime-strong: #b6f23b;
+  --lime-ink: #0b1006;
+  --mint: #8de8cf;
+  --danger: #ff9b86;
+  --radius-lg: 28px;
+  --radius-md: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 28px 80px rgba(0, 0, 0, 0.5);
+  --font-sans: "Inter", "SF Pro Display", "PingFang SC", "HarmonyOS Sans SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --font-serif: "Iowan Old Style", "Baskerville", "Songti SC", "STSong", "Noto Serif SC", Georgia, serif;
+  --font-mono: "SFMono-Regular", "JetBrains Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--lime);
+  color: var(--lime-ink);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ---------- backdrop ---------- */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 55% at 50% -10%, rgba(143, 190, 62, 0.13), transparent 60%),
+    linear-gradient(180deg, #080b09 0%, #060806 100%);
+}
+
+.orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(90px);
+  opacity: 0.55;
+}
+
+.orb-one {
+  width: 44vw;
+  height: 44vw;
+  min-width: 340px;
+  min-height: 340px;
+  top: -14vw;
+  right: -8vw;
+  background: radial-gradient(circle, rgba(201, 255, 87, 0.24), transparent 66%);
+}
+
+.orb-two {
+  width: 40vw;
+  height: 40vw;
+  min-width: 300px;
+  min-height: 300px;
+  top: 38vh;
+  left: -18vw;
+  background: radial-gradient(circle, rgba(90, 200, 170, 0.16), transparent 66%);
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 78%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 78%);
+}
+
+/* ---------- header ---------- */
+.site-header {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 26px 0;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(201, 255, 87, 0.28);
+  border-radius: 13px;
+  background:
+    linear-gradient(145deg, rgba(201, 255, 87, 0.16), rgba(201, 255, 87, 0.02)),
+    rgba(255, 255, 255, 0.02);
+  color: var(--lime);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.brand-mark svg {
+  width: 25px;
+  height: 25px;
+}
+
+.brand-mark.small {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+
+.brand-mark.small svg {
+  width: 18px;
+  height: 18px;
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.brand-copy strong {
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+
+.brand-copy small {
+  color: var(--muted-dim);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.header-nav a {
+  transition: color 0.2s ease;
+}
+
+.header-nav a:hover {
+  color: var(--text);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.status-pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 10px rgba(201, 255, 87, 0.8);
+}
+
+/* ---------- main ---------- */
+main {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 48px 0 96px;
+}
+
+.hero {
+  max-width: 820px;
+  margin: 0 0 52px;
+  animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  color: var(--muted-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+}
+
+.eyebrow-line {
+  width: 32px;
+  height: 1px;
+  background: var(--lime);
+  opacity: 0.7;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(48px, 8.2vw, 104px);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  line-height: 0.94;
+}
+
+.hero h1 em {
+  display: inline-block;
+  color: var(--lime);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  text-shadow: 0 0 48px rgba(201, 255, 87, 0.15);
+}
+
+.lede {
+  max-width: 590px;
+  margin: 30px 0 0;
+  color: var(--muted);
+  font-size: clamp(15px, 1.6vw, 17px);
+  line-height: 1.9;
+}
+
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.hero-tags span {
+  padding: 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--muted-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ---------- create card ---------- */
+.mail-card {
+  position: relative;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012) 48%),
+    var(--panel);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  animation: rise 0.8s 0.08s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.mail-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 9%;
+  right: 9%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 255, 87, 0.55), transparent);
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 0 4px rgba(201, 255, 87, 0.08);
+}
+
+.text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 12px;
+  transition: color 0.2s ease;
+}
+
+.text-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.text-btn:hover {
+  color: var(--lime);
+}
+
+.address-builder {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) auto minmax(0, 0.9fr) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.field-label {
+  padding-left: 3px;
+  color: var(--muted-dim);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  height: 58px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  outline: none;
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field input {
+  padding: 0 18px;
+}
+
+.field input::placeholder {
+  color: #58635a;
+}
+
+.field input:focus,
+.field select:focus {
+  border-color: rgba(201, 255, 87, 0.5);
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 4px rgba(201, 255, 87, 0.07);
+}
+
+.field.has-error input {
+  border-color: rgba(255, 155, 134, 0.65);
+  box-shadow: 0 0 0 4px rgba(255, 155, 134, 0.07);
+}
+
+.at-sign {
+  display: grid;
+  place-items: center;
+  height: 58px;
+  padding-bottom: 2px;
+  color: var(--lime);
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.select-wrap {
+  position: relative;
+  display: block;
+}
+
+.field select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0 42px 0 18px;
+  cursor: pointer;
+}
+
+.field select option {
+  background: var(--panel-solid);
+  color: var(--text);
+}
+
+.chevron {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.primary-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 58px;
+  min-width: 140px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 15px;
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  box-shadow: 0 10px 30px rgba(201, 255, 87, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.primary-btn:hover {
+  background: #d5ff7a;
+  box-shadow: 0 14px 36px rgba(201, 255, 87, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.primary-btn:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.primary-btn:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
+}
+
+.btn-spinner {
+  display: none;
+  width: 17px;
+  height: 17px;
+  border: 2px solid rgba(11, 16, 6, 0.25);
+  border-top-color: var(--lime-ink);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.primary-btn.is-loading .btn-text {
+  display: none;
+}
+
+.primary-btn.is-loading .btn-spinner {
+  display: block;
+}
+
+.hint {
+  margin: 14px 4px 0;
+  color: var(--muted-dim);
+  font-size: 11px;
+  line-height: 1.6;
+  transition: color 0.2s ease;
+}
+
+.hint.error {
+  color: var(--danger);
+}
+
+.shake {
+  animation: shake 0.35s ease;
+}
+
+/* ---------- inbox ---------- */
+.inbox-card {
+  margin-top: 20px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  animation: rise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.inbox-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px 26px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.inbox-identity {
+  min-width: 0;
+}
+
+.inbox-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 21px;
+  height: 19px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: rgba(201, 255, 87, 0.12);
+  color: var(--lime);
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+.address-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.address-line code {
+  overflow: hidden;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: clamp(16px, 2.4vw, 23px);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.copy-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.copy-btn:hover {
+  border-color: rgba(201, 255, 87, 0.35);
+  background: rgba(201, 255, 87, 0.06);
+  color: var(--lime);
+}
+
+.inbox-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.expiry {
+  margin-right: 4px;
+  color: var(--muted-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.expiry.is-warning {
+  color: var(--danger);
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--muted);
+  font-size: 11px;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.icon-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.icon-btn:hover {
+  border-color: var(--line-strong);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.icon-btn.spinning svg {
+  animation: spin 0.8s linear infinite;
+}
+
+.danger-ghost:hover {
+  border-color: rgba(255, 155, 134, 0.28);
+  color: var(--danger);
+}
+
+.inbox-body {
+  min-height: 300px;
+}
+
+.message-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.message-item {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 18px 26px;
+  border: 0;
+  border-bottom: 1px solid rgba(238, 255, 235, 0.055);
+  background: transparent;
+  text-align: left;
+  transition: background 0.18s ease;
+  animation: fade-in 0.35s ease both;
+}
+
+.message-item:last-child {
+  border-bottom: 0;
+}
+
+.message-item:hover {
+  background: rgba(255, 255, 255, 0.028);
+}
+
+.message-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.message-item.is-unread .message-dot {
+  background: var(--lime);
+  box-shadow: 0 0 8px rgba(201, 255, 87, 0.5);
+}
+
+.message-item.is-unread .message-subject {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.message-main {
+  min-width: 0;
+}
+
+.message-sender {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sender-badge {
+  flex: none;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--muted-dim);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.message-subject {
+  overflow: hidden;
+  color: #dce5da;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message-excerpt {
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--muted-dim);
+  font-size: 11px;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.message-arrow {
+  width: 18px;
+  height: 18px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.message-item:hover .message-arrow {
+  opacity: 0.8;
+  transform: translateX(0);
+}
+
+/* ---------- empty ---------- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 58px 24px 62px;
+  text-align: center;
+}
+
+.radar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  margin-bottom: 24px;
+}
+
+.radar-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(201, 255, 87, 0.18);
+  border-radius: 50%;
+  animation: radar 3.2s ease-out infinite;
+}
+
+.radar-ring.delay-one {
+  animation-delay: 1.05s;
+}
+
+.radar-ring.delay-two {
+  animation-delay: 2.1s;
+}
+
+.radar-core {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border: 1px solid rgba(201, 255, 87, 0.22);
+  border-radius: 18px;
+  background: rgba(201, 255, 87, 0.055);
+  color: var(--lime);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.radar-core svg {
+  width: 27px;
+  height: 27px;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 550;
+}
+
+.empty-state p {
+  max-width: 360px;
+  margin: 0;
+  color: var(--muted-dim);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.empty-state.is-error .radar-core {
+  border-color: rgba(255, 155, 134, 0.25);
+  background: rgba(255, 155, 134, 0.06);
+  color: var(--danger);
+}
+
+.empty-state.is-error .radar-ring {
+  border-color: rgba(255, 155, 134, 0.15);
+}
+
+.inbox-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 26px;
+  border-top: 1px solid var(--line);
+  color: var(--muted-dim);
+  font-size: 10px;
+}
+
+.foot-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.pulse-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--mint);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+/* ---------- how / notice ---------- */
+.how {
+  margin-top: 96px;
+}
+
+.section-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.section-index {
+  color: var(--muted-dim);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(26px, 3.2vw, 38px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--line);
+}
+
+.step {
+  padding: 28px;
+  background: var(--bg-soft);
+}
+
+.step-num {
+  display: inline-block;
+  margin-bottom: 22px;
+  color: var(--lime);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.step h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 550;
+}
+
+.step p {
+  margin: 0;
+  color: var(--muted-dim);
+  font-size: 12px;
+  line-height: 1.85;
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-top: 28px;
+  padding: 18px 20px;
+  border: 1px solid rgba(255, 155, 134, 0.13);
+  border-radius: 14px;
+  background: rgba(255, 155, 134, 0.035);
+  color: var(--muted);
+}
+
+.notice svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--danger);
+  opacity: 0.75;
+}
+
+.notice p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+.notice strong {
+  color: #ffc2b3;
+  font-weight: 550;
+}
+
+/* ---------- footer ---------- */
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 24px 0 40px;
+  border-top: 1px solid rgba(238, 255, 235, 0.06);
+  color: var(--muted-dim);
+  font-size: 10px;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+}
+
+.site-footer p {
+  margin: 0;
+  text-align: right;
+}
+
+/* ---------- toast ---------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 100;
+  max-width: calc(100vw - 32px);
+  padding: 11px 18px;
+  border: 1px solid rgba(201, 255, 87, 0.22);
+  border-radius: 11px;
+  background: rgba(19, 27, 20, 0.96);
+  color: var(--text);
+  font-size: 12px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 12px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  backdrop-filter: blur(14px);
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.toast.error {
+  border-color: rgba(255, 155, 134, 0.3);
+}
+
+/* ---------- modal ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 4, 3, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: fade-in 0.2s ease both;
+}
+
+.modal-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(860px, 100%);
+  max-height: min(86vh, 900px);
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 22px;
+  background: #0e130f;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: modal-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px 26px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-heading {
+  min-width: 0;
+}
+
+.modal-kicker {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--lime);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.2em;
+}
+
+.modal-head h2 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: clamp(18px, 2.6vw, 24px);
+  font-weight: 550;
+  letter-spacing: -0.025em;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modal-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 7px;
+  color: var(--muted-dim);
+  font-size: 10px;
+}
+
+.meta-sep {
+  opacity: 0.45;
+}
+
+.modal-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.modal-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.modal-close:hover {
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+.modal-body {
+  flex: 1;
+  overflow: auto;
+  padding: 20px 26px 26px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.code-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 13px 15px;
+  border: 1px solid rgba(201, 255, 87, 0.24);
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(201, 255, 87, 0.1), rgba(201, 255, 87, 0.025));
+}
+
+.code-label {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+}
+
+.code-box strong {
+  color: var(--lime);
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+
+.mini-btn {
+  flex: none;
+  height: 31px;
+  padding: 0 12px;
+  border: 1px solid rgba(201, 255, 87, 0.22);
+  border-radius: 8px;
+  background: rgba(201, 255, 87, 0.08);
+  color: var(--lime);
+  font-size: 10px;
+  transition: background 0.2s ease;
+}
+
+.mini-btn:hover {
+  background: rgba(201, 255, 87, 0.14);
+}
+
+.mail-frame {
+  width: 100%;
+  min-height: 420px;
+  height: 52vh;
+  border: 0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.mail-text {
+  margin: 0;
+  padding: 18px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+  color: #d9e2d6;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mail-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 320px;
+}
+
+.mail-loading span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lime);
+  opacity: 0.35;
+  animation: dot-pulse 1.2s ease-in-out infinite;
+}
+
+.mail-loading span:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.mail-loading span:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+/* ---------- animations ---------- */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes radar {
+  0% { opacity: 0.6; transform: scale(0.55); }
+  70% { opacity: 0; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1.05); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(141, 232, 207, 0.3); }
+  50% { opacity: 0.55; box-shadow: 0 0 0 5px rgba(141, 232, 207, 0); }
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-3px); }
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  .address-builder {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "prefix at"
+      "suffix suffix"
+      "button button";
+    gap: 10px 12px;
+  }
+
+  .prefix-field { grid-area: prefix; }
+  .at-sign { grid-area: at; justify-content: flex-start; padding-left: 2px; }
+  .suffix-field { grid-area: suffix; }
+  .primary-btn { grid-area: button; width: 100%; }
+
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .step {
+    padding: 24px;
+  }
+
+  .step-num {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 680px) {
+  .site-header,
+  main,
+  .site-footer {
+    width: calc(100% - 32px);
+  }
+
+  .site-header {
+    padding: 18px 0;
+  }
+
+  .header-nav a {
+    display: none;
+  }
+
+  .brand-mark {
+    width: 38px;
+    height: 38px;
+  }
+
+  main {
+    padding: 30px 0 70px;
+  }
+
+  .hero {
+    margin-bottom: 34px;
+  }
+
+  .hero h1 {
+    font-size: clamp(44px, 13.5vw, 68px);
+  }
+
+  .lede {
+    margin-top: 22px;
+    font-size: 14px;
+    line-height: 1.85;
+  }
+
+  .hero-tags {
+    margin-top: 20px;
+  }
+
+  .mail-card {
+    padding: 20px;
+    border-radius: 22px;
+  }
+
+  .card-top {
+    margin-bottom: 16px;
+  }
+
+  .field input,
+  .field select,
+  .at-sign,
+  .primary-btn {
+    height: 54px;
+  }
+
+  .primary-btn {
+    min-width: 0;
+  }
+
+  .inbox-head {
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .inbox-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .expiry {
+    margin-right: auto;
+  }
+
+  .address-line code {
+    font-size: 16px;
+    white-space: normal;
+    word-break: break-all;
+  }
+
+  .message-item {
+    grid-template-columns: 8px minmax(0, 1fr);
+    padding: 16px 20px;
+  }
+
+  .message-side {
+    grid-column: 2;
+    justify-content: flex-start;
+    margin-top: -4px;
+  }
+
+  .message-arrow {
+    display: none;
+  }
+
+  .inbox-foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 12px 20px;
+  }
+
+  .how {
+    margin-top: 68px;
+  }
+
+  .site-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding-bottom: 28px;
+  }
+
+  .site-footer p {
+    text-align: left;
+  }
+
+  .modal {
+    padding: 0;
+    align-items: end;
+  }
+
+  .modal-panel {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 20px 20px 0 0;
+    border-bottom: 0;
+  }
+
+  .modal-head {
+    padding: 20px 20px 16px;
+  }
+
+  .modal-body {
+    padding: 16px 20px 24px;
+  }
+
+  .mail-frame {
+    min-height: 360px;
+    height: 48vh;
+  }
+
+  .toast {
+    bottom: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+</style>
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true">
+    <div class="orb orb-one"></div>
+    <div class="orb orb-two"></div>
+    <div class="grid"></div>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="TempBox 首页">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none">
+          <path d="M5 9.5 16 18l11-8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="5" y="7" width="22" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M23.5 4.5v4M21.5 6.5h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand-copy">
+        <strong>TempBox</strong>
+        <small>临时邮局</small>
+      </span>
+    </a>
+
+    <nav class="header-nav" aria-label="主导航">
+      <a href="#how">怎么用</a>
+      <span class="status-pill"><i></i> 无需注册</span>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="eyebrow"><span class="eyebrow-line"></span> DISPOSABLE INBOX</div>
+      <h1 id="heroTitle">用完即走的<br /><em>临时邮箱</em></h1>
+      <p class="lede">前缀随你写，后缀随你选。收验证码、注册小号、挡垃圾邮件——不绑定手机号，不留痕迹。</p>
+      <div class="hero-tags" aria-label="特点">
+        <span>秒级生成</span>
+        <span>自动收信</span>
+        <span>完全免费</span>
+      </div>
+    </section>
+
+    <section class="mail-card" id="mailCard" aria-labelledby="createTitle">
+      <div class="card-top">
+        <div class="card-title" id="createTitle"><span class="live-dot"></span> 新建邮箱</div>
+        <button class="text-btn" id="randomBtn" type="button">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4 5h2.2c.9 0 1.7.4 2.2 1.1L11.6 13c.5.7 1.3 1.1 2.2 1.1H16M13 11l3 3-3 3M4 15h2.2c.9 0 1.7-.4 2.2-1.1l.4-.6M13 5l3 3-3 3M12.2 8.7l.4-.6c.5-.7 1.3-1.1 2.2-1.1H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          随机前缀
+        </button>
+      </div>
+
+      <form id="createForm" novalidate>
+        <div class="address-builder">
+          <label class="field prefix-field" for="prefixInput">
+            <span class="field-label">前缀</span>
+            <input
+              id="prefixInput"
+              name="prefix"
+              type="text"
+              inputmode="text"
+              autocomplete="off"
+              autocapitalize="none"
+              spellcheck="false"
+              maxlength="32"
+              placeholder="例如 mint-fox-2049"
+              aria-describedby="prefixHint"
+            />
+          </label>
+          <span class="at-sign" aria-hidden="true">@</span>
+          <label class="field suffix-field" for="suffixSelect">
+            <span class="field-label">后缀</span>
+            <span class="select-wrap">
+              <select id="suffixSelect" name="suffix" aria-label="邮箱后缀"></select>
+              <svg class="chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </label>
+          <button class="primary-btn" id="createBtn" type="submit">
+            <span class="btn-text">生成邮箱</span>
+            <span class="btn-spinner" aria-hidden="true"></span>
+          </button>
+        </div>
+        <p class="hint" id="prefixHint">1–32 位字母、数字、点、下划线或短横线，不能以符号开头或结尾。</p>
+      </form>
+    </section>
+
+    <section class="inbox-card hidden" id="inboxCard" aria-labelledby="inboxTitle">
+      <div class="inbox-head">
+        <div class="inbox-identity">
+          <div class="inbox-title" id="inboxTitle">收件箱 <span class="count" id="msgCount">0</span></div>
+          <div class="address-line">
+            <code id="addressText"></code>
+            <button class="copy-btn" id="copyBtn" type="button" title="复制邮箱地址">
+              <svg viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="6" y="6" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M4.5 11.5h-.7A1.8 1.8 0 0 1 2 9.7V4.8A1.8 1.8 0 0 1 3.8 3h4.9a1.8 1.8 0 0 1 1.8 1.8v.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              复制
+            </button>
+          </div>
+        </div>
+        <div class="inbox-actions">
+          <span class="expiry" id="expiry"></span>
+          <button class="icon-btn" id="refreshBtn" type="button" title="刷新收件箱">
+            <svg viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M14.5 6.5A6 6 0 1 0 15 9M14.5 3v3.5H11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>刷新</span>
+          </button>
+          <button class="icon-btn danger-ghost" id="newBtn" type="button" title="生成新邮箱">
+            <svg viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 3.5v11M3.5 9h11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span>换一个</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="inbox-body">
+        <div class="message-list" id="messageList" role="list"></div>
+
+        <div class="empty-state" id="emptyState">
+          <div class="radar" aria-hidden="true">
+            <span class="radar-ring"></span>
+            <span class="radar-ring delay-one"></span>
+            <span class="radar-ring delay-two"></span>
+            <span class="radar-core">
+              <svg viewBox="0 0 24 24" fill="none"><path d="m3.5 7 8.5 6.5L20.5 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="3.5" y="5" width="17" height="14" rx="3.2" stroke="currentColor" stroke-width="1.6"/></svg>
+            </span>
+          </div>
+          <h3>等待第一封邮件</h3>
+          <p>把上面的地址复制到需要注册的网站，邮件会自动出现在这里。</p>
+        </div>
+      </div>
+
+      <div class="inbox-foot">
+        <span id="providerNote"></span>
+        <span class="foot-right"><span class="pulse-dot"></span><span id="lastRefresh">等待收信</span></span>
+      </div>
+    </section>
+
+    <section class="how" id="how" aria-labelledby="howTitle">
+      <div class="section-heading">
+        <span class="section-index">01 / HOW IT WORKS</span>
+        <h2 id="howTitle">三步，开始收信</h2>
+      </div>
+      <div class="steps">
+        <article class="step">
+          <span class="step-num">01</span>
+          <h3>写下前缀</h3>
+          <p>用你的名字、项目名或一串随机字符。前缀越独特，越不容易和别人撞地址。</p>
+        </article>
+        <article class="step">
+          <span class="step-num">02</span>
+          <h3>选择后缀</h3>
+          <p>从可用域名中选择。不同后缀对应不同服务，有效时间也不一样。</p>
+        </article>
+        <article class="step">
+          <span class="step-num">03</span>
+          <h3>复制，然后等信</h3>
+          <p>把地址粘贴到注册页，收件箱每 10 秒自动刷新，验证码直接复制。</p>
+        </article>
+      </div>
+    </section>
+
+    <aside class="notice" role="note">
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.8 17.2 16H2.8L10 2.8Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M10 7v4.2M10 14.1v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <p><strong>别拿它绑定重要账号。</strong>临时邮箱是公开、共享的收信通道，可能被他人读取，也可能随时失效。银行、支付、主邮箱恢复等场景请使用正式邮箱。</p>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-brand">
+      <span class="brand-mark small" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none"><path d="M5 9.5 16 18l11-8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="5" y="7" width="22" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/></svg>
+      </span>
+      <span>TempBox · 用完即走</span>
+    </div>
+    <p>由 Guerrilla Mail / Maildrop 提供收信能力 · 本站不存储邮件内容</p>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="modal hidden" id="messageModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close="true"></div>
+    <article class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalSubject">
+      <header class="modal-head">
+        <div class="modal-heading">
+          <span class="modal-kicker">MESSAGE</span>
+          <h2 id="modalSubject">邮件详情</h2>
+          <div class="modal-meta">
+            <span id="modalFrom"></span>
+            <span class="meta-sep">·</span>
+            <time id="modalDate"></time>
+          </div>
+        </div>
+        <button class="modal-close" id="modalClose" type="button" aria-label="关闭邮件详情">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+      <div class="modal-body">
+        <div class="code-box hidden" id="codeBox">
+          <div>
+            <span class="code-label">检测到验证码</span>
+            <strong id="codeValue">------</strong>
+          </div>
+          <button class="mini-btn" id="copyCodeBtn" type="button">复制验证码</button>
+        </div>
+        <div class="mail-loading" id="mailLoading">
+          <span></span><span></span><span></span>
+        </div>
+        <iframe class="mail-frame hidden" id="mailFrame" title="邮件正文" sandbox="allow-popups allow-popups-to-escape-sandbox"></iframe>
+        <pre class="mail-text hidden" id="mailText"></pre>
+      </div>
+    </article>
+  </div>
+
+  <script>
+/* TempBox · 临时邮局
+ * 纯前端实现，收信能力来自 Guerrilla Mail 与 Maildrop 的公开 API。
+ */
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "tempbox.session.v1";
+  var READ_PREFIX = "tempbox.read.";
+  var GUERRILLA_API = "https://api.guerrillamail.com/ajax.php";
+  var MAILDROP_API = "https://api.maildrop.cc/graphql";
+  var POLL_INTERVAL = 10000;
+
+  var DOMAINS = [
+    {
+      id: "guerrilla",
+      domain: "guerrillamailblock.com",
+      name: "Guerrilla Mail",
+      ttl: 60 * 60 * 1000,
+      note: "Guerrilla Mail · 地址约 60 分钟后失效"
+    },
+    {
+      id: "maildrop",
+      domain: "maildrop.cc",
+      name: "Maildrop",
+      ttl: 0,
+      note: "Maildrop · 地址长期保留，由服务方决定"
+    }
+  ];
+
+  var WORDS = [
+    "amber", "atlas", "bamboo", "cedar", "cobalt", "coral", "cosmo", "delta",
+    "ember", "fern", "flint", "frost", "harbor", "hazel", "indigo", "ivory",
+    "jade", "lumen", "maple", "mint", "nova", "olive", "onyx", "opal",
+    "pearl", "pine", "quartz", "raven", "river", "sable", "sage", "slate",
+    "solar", "spruce", "storm", "tide", "umber", "velvet", "willow", "zephyr"
+  ];
+
+  var state = {
+    session: null,
+    messages: [],
+    readIds: new Set(),
+    creating: false,
+    refreshing: false,
+    currentMessageId: null,
+    pollTimer: null,
+    tickTimer: null,
+    toastTimer: null,
+    lastError: ""
+  };
+
+  /* ---------- shortcuts ---------- */
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function setText(el, text) {
+    if (el) el.textContent = text == null ? "" : String(text);
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (char) {
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[char];
+    });
+  }
+
+  function normalizePrefix(value) {
+    return String(value || "").trim().toLowerCase();
+  }
+
+  function validatePrefix(prefix) {
+    if (!prefix) return "先写一个前缀，或者点右上角随机生成。";
+    if (prefix.length > 32) return "前缀最多 32 位。";
+    if (!/^[a-z0-9]/.test(prefix)) return "前缀要以字母或数字开头。";
+    if (!/[a-z0-9]$/.test(prefix)) return "前缀要以字母或数字结尾。";
+    if (!/^[a-z0-9._-]+$/.test(prefix)) return "只能用字母、数字、点、下划线或短横线。";
+    if (prefix.indexOf("..") !== -1) return "前缀里不能出现连续的点。";
+    return "";
+  }
+
+  function randomInt(max) {
+    if (window.crypto && window.crypto.getRandomValues) {
+      var buffer = new Uint32Array(1);
+      window.crypto.getRandomValues(buffer);
+      return buffer[0] % max;
+    }
+    return Math.floor(Math.random() * max);
+  }
+
+  function randomPrefix() {
+    var first = WORDS[randomInt(WORDS.length)];
+    var second = WORDS[randomInt(WORDS.length)];
+    while (second === first) second = WORDS[randomInt(WORDS.length)];
+    return first + "-" + second + "-" + String(1000 + randomInt(9000));
+  }
+
+  function domainConfig(domain) {
+    for (var i = 0; i < DOMAINS.length; i++) {
+      if (DOMAINS[i].domain === domain) return DOMAINS[i];
+    }
+    return null;
+  }
+
+  /* ---------- storage ---------- */
+  function readStorage(key) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function writeStorage(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch (error) {
+      /* localStorage 不可用时仍可正常收信，只是不记忆。 */
+    }
+  }
+
+  function removeStorage(key) {
+    try {
+      window.localStorage.removeItem(key);
+    } catch (error) {
+      /* ignore */
+    }
+  }
+
+  function saveSession(session) {
+    writeStorage(STORAGE_KEY, JSON.stringify(session));
+  }
+
+  function loadSession() {
+    var raw = readStorage(STORAGE_KEY);
+    if (!raw) return null;
+    try {
+      var parsed = JSON.parse(raw);
+      if (!parsed || !parsed.address || !parsed.provider || !parsed.local || !parsed.domain) {
+        return null;
+      }
+      if (!domainConfig(parsed.domain)) return null;
+      return parsed;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function readKey(address) {
+    return READ_PREFIX + address;
+  }
+
+  function loadReadIds(address) {
+    var raw = readStorage(readKey(address));
+    if (!raw) return new Set();
+    try {
+      var parsed = JSON.parse(raw);
+      return new Set(Array.isArray(parsed) ? parsed : []);
+    } catch (error) {
+      return new Set();
+    }
+  }
+
+  function saveReadIds() {
+    if (!state.session) return;
+    writeStorage(readKey(state.session.address), JSON.stringify(Array.from(state.readIds)));
+  }
+
+  /* ---------- formatting ---------- */
+  function parseDate(value) {
+    if (!value) return new Date();
+    var date = value instanceof Date ? value : new Date(value);
+    return isNaN(date.getTime()) ? new Date() : date;
+  }
+
+  function formatClock(date) {
+    var h = String(date.getHours()).padStart(2, "0");
+    var m = String(date.getMinutes()).padStart(2, "0");
+    return h + ":" + m;
+  }
+
+  function formatRelative(date) {
+    var diff = Date.now() - date.getTime();
+    if (diff < 0) diff = 0;
+    if (diff < 60000) return "刚刚";
+    if (diff < 3600000) return Math.floor(diff / 60000) + " 分钟前";
+    var now = new Date();
+    if (date.toDateString() === now.toDateString()) return formatClock(date);
+    return (date.getMonth() + 1) + "/" + date.getDate();
+  }
+
+  function formatFullDate(date) {
+    return date.toLocaleString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+
+  function formatRemaining(milliseconds) {
+    if (milliseconds <= 0) return "已过期";
+    var totalSeconds = Math.floor(milliseconds / 1000);
+    var minutes = Math.floor(totalSeconds / 60);
+    var seconds = totalSeconds % 60;
+    return "剩余 " + minutes + ":" + String(seconds).padStart(2, "0");
+  }
+
+  function displaySender(message) {
+    var from = message.headerfrom || message.mailfrom || "未知发件人";
+    var match = String(from).match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>\s*$/);
+    if (match && match[1]) return match[1].trim() + " <" + match[2].trim() + ">";
+    return String(from).trim();
+  }
+
+  function senderEmail(message) {
+    var from = String(message.headerfrom || message.mailfrom || "");
+    var match = from.match(/<([^>]+)>/);
+    return (match ? match[1] : from).trim();
+  }
+
+  /* ---------- network helpers ---------- */
+  function fetchJson(url, options) {
+    var controller = window.AbortController ? new AbortController() : null;
+    var timeout = setTimeout(function () {
+      if (controller) controller.abort();
+    }, 20000);
+
+    var requestOptions = options || {};
+    if (controller) requestOptions.signal = controller.signal;
+
+    return fetch(url, requestOptions)
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("服务返回 " + response.status);
+        }
+        return response.json();
+      })
+      .finally(function () {
+        clearTimeout(timeout);
+      });
+  }
+
+  function guerrillaUrl(params) {
+    var query = Object.keys(params)
+      .map(function (key) {
+        return encodeURIComponent(key) + "=" + encodeURIComponent(params[key]);
+      })
+      .join("&");
+    return GUERRILLA_API + "?" + query;
+  }
+
+  async function maildropQuery(query, variables) {
+    var data = await fetchJson(MAILDROP_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: query, variables: variables })
+    });
+    if (data && data.errors && data.errors.length) {
+      throw new Error(data.errors[0].message || "Maildrop 请求失败");
+    }
+    if (!data || !data.data) throw new Error("Maildrop 返回为空");
+    return data.data;
+  }
+
+  /* ---------- providers ---------- */
+  var providers = {
+    guerrilla: {
+      label: "Guerrilla Mail",
+      async create(local, domain) {
+        var data = await fetchJson(
+          guerrillaUrl({
+            f: "set_email_user",
+            email_user: local,
+            lang: "zh",
+            site: "guerrillamail.com"
+          })
+        );
+
+        if (!data || !data.email_addr) {
+          throw new Error((data && data.alias_error) || "无法创建 Guerrilla Mail 地址");
+        }
+
+        var actualDomain = String(data.email_addr).split("@").pop() || domain;
+        return {
+          provider: "guerrilla",
+          local: String(data.email_addr).split("@")[0],
+          domain: actualDomain,
+          address: String(data.email_addr),
+          sidToken: data.sid_token || "",
+          createdAt: Date.now(),
+          providerCreatedAt: Number(data.email_timestamp || 0) * 1000 || Date.now()
+        };
+      },
+
+      async list(session) {
+        var data = await fetchJson(
+          guerrillaUrl({
+            f: "check_email",
+            seq: 0,
+            sid_token: session.sidToken,
+            lang: "zh"
+          })
+        );
+
+        if (!data || (!Array.isArray(data.list) && !data.email)) {
+          throw new Error("Guerrilla Mail 收件箱暂时不可用");
+        }
+
+        var list = Array.isArray(data.list) ? data.list : [];
+        return list.map(function (mail) {
+          var date = Number(mail.mail_timestamp || 0) > 0
+            ? new Date(Number(mail.mail_timestamp) * 1000)
+            : new Date();
+          return {
+            id: String(mail.mail_id),
+            from: mail.mail_from || "",
+            headerfrom: mail.mail_from || "",
+            subject: decodeHtml(mail.mail_subject || ""),
+            excerpt: decodeHtml(mail.mail_excerpt || ""),
+            date: date,
+            dateLabel: mail.mail_date || formatClock(date),
+            read: Number(mail.mail_read) === 1,
+            contentType: mail.content_type || ""
+          };
+        });
+      },
+
+      async get(session, id) {
+        var data = await fetchJson(
+          guerrillaUrl({
+            f: "fetch_email",
+            email_id: id,
+            sid_token: session.sidToken,
+            lang: "zh"
+          })
+        );
+
+        if (!data || !data.mail_id) {
+          throw new Error("这封邮件可能已经失效");
+        }
+
+        var date = Number(data.mail_timestamp || 0) > 0
+          ? new Date(Number(data.mail_timestamp) * 1000)
+          : new Date();
+
+        return {
+          id: String(data.mail_id),
+          from: data.mail_from || "",
+          headerfrom: data.mail_from || "",
+          subject: decodeHtml(data.mail_subject || ""),
+          date: date,
+          html: data.mail_body || "",
+          text: data.mail_body ? stripHtml(data.mail_body) : ""
+        };
+      }
+    },
+
+    maildrop: {
+      label: "Maildrop",
+      async create(local, domain) {
+        return {
+          provider: "maildrop",
+          local: local,
+          domain: domain,
+          address: local + "@" + domain,
+          sidToken: "",
+          createdAt: Date.now(),
+          providerCreatedAt: Date.now()
+        };
+      },
+
+      async list(session) {
+        var data = await maildropQuery(
+          "query Inbox($mailbox: String!) { inbox(mailbox: $mailbox) { id date mailfrom headerfrom subject } }",
+          { mailbox: session.local }
+        );
+        var list = Array.isArray(data.inbox) ? data.inbox : [];
+        return list
+          .map(function (mail) {
+            return {
+              id: String(mail.id),
+              from: mail.mailfrom || "",
+              headerfrom: mail.headerfrom || "",
+              subject: decodeHtml(mail.subject || ""),
+              excerpt: "点击查看邮件正文",
+              date: parseDate(mail.date),
+              dateLabel: "",
+              read: false,
+              contentType: ""
+            };
+          })
+          .sort(function (a, b) {
+            return b.date - a.date;
+          });
+      },
+
+      async get(session, id) {
+        var data = await maildropQuery(
+          "query Message($mailbox: String!, $id: String!) { message(mailbox: $mailbox, id: $id) { id date mailfrom headerfrom subject data html } }",
+          { mailbox: session.local, id: id }
+        );
+        var mail = data.message;
+        if (!mail) throw new Error("这封邮件可能已经被删除");
+
+        var html = typeof mail.html === "string" ? mail.html : "";
+        var raw = typeof mail.data === "string" ? mail.data : "";
+        var text = raw ? extractReadableText(raw) : "";
+
+        return {
+          id: String(mail.id),
+          from: mail.mailfrom || "",
+          headerfrom: mail.headerfrom || "",
+          subject: decodeHtml(mail.subject || ""),
+          date: parseDate(mail.date),
+          html: html,
+          text: text
+        };
+      }
+    }
+  };
+
+  function currentProvider() {
+    return state.session ? providers[state.session.provider] : null;
+  }
+
+  /* ---------- HTML helpers ---------- */
+  function decodeHtml(value) {
+    var textarea = document.createElement("textarea");
+    textarea.innerHTML = String(value == null ? "" : value);
+    return textarea.value;
+  }
+
+  function stripHtml(html) {
+    var doc = new DOMParser().parseFromString(String(html || ""), "text/html");
+    doc.querySelectorAll("script, style, noscript").forEach(function (node) {
+      node.remove();
+    });
+    return (doc.body ? doc.body.textContent : "").replace(/\s+\n/g, "\n").trim();
+  }
+
+  function extractReadableText(raw) {
+    var text = String(raw || "");
+    var headerBreak = text.search(/\r?\n\r?\n/);
+    if (headerBreak !== -1 && /^[\w-]+:/m.test(text.slice(0, headerBreak))) {
+      text = text.slice(headerBreak).replace(/^\r?\n\r?\n/, "");
+    }
+    text = text.replace(/=\r?\n/g, "");
+    text = text.replace(/=([0-9A-Fa-f]{2})/g, function (_, hex) {
+      try {
+        return String.fromCharCode(parseInt(hex, 16));
+      } catch (error) {
+        return _;
+      }
+    });
+    text = text.replace(/<style[\s\S]*?<\/style>/gi, " ");
+    text = text.replace(/<script[\s\S]*?<\/script>/gi, " ");
+    text = stripHtml(text);
+    text = text.replace(/\n{3,}/g, "\n\n").trim();
+    return text.slice(0, 20000);
+  }
+
+  function sanitizeEmailHtml(html) {
+    var doc = new DOMParser().parseFromString(String(html || ""), "text/html");
+    doc.querySelectorAll("script, noscript, iframe, frame, frameset, object, embed, form, input, button, textarea, select, link, meta, base").forEach(function (node) {
+      node.remove();
+    });
+
+    doc.querySelectorAll("*").forEach(function (element) {
+      Array.prototype.slice.call(element.attributes).forEach(function (attr) {
+        var name = attr.name.toLowerCase();
+        var value = attr.value || "";
+        if (name.indexOf("on") === 0 || name === "srcdoc") {
+          element.removeAttribute(attr.name);
+          return;
+        }
+        if ((name === "href" || name === "src" || name === "xlink:href") && /^\s*(javascript|vbscript|data:text\/html)/i.test(value)) {
+          element.removeAttribute(attr.name);
+          return;
+        }
+        if (name === "style" && /(expression\s*\(|javascript:|url\s*\(\s*['"]?\s*javascript:)/i.test(value)) {
+          element.removeAttribute(attr.name);
+        }
+      });
+    });
+
+    return doc.body ? doc.body.innerHTML : "";
+  }
+
+  function buildMailDocument(html) {
+    var safe = sanitizeEmailHtml(html);
+    return [
+      "<!doctype html><html><head><meta charset=\"utf-8\">",
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+      "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; img-src data: http: https:; style-src 'unsafe-inline' http: https:; font-src data: http: https:; media-src http: https:;\">",
+      "<base target=\"_blank\">",
+      "<style>",
+      "html,body{margin:0;padding:0;background:#fff;color:#20261f;}",
+      "body{padding:20px;font:14px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Noto Sans SC',Arial,sans-serif;overflow-wrap:break-word;}",
+      "img{max-width:100%;height:auto;}table{max-width:100%;border-collapse:collapse;}",
+      "a{color:#0a66c2;}pre{white-space:pre-wrap;word-break:break-word;}",
+      "blockquote{margin-left:0;padding-left:14px;border-left:3px solid #ddd;color:#555;}",
+      "</style></head><body>",
+      safe,
+      "</body></html>"
+    ].join("");
+  }
+
+  function findVerificationCode(text) {
+    var source = String(text || "");
+    var patterns = [
+      /(?:验证码|校验码|动态码|确认码|verification\s*code|security\s*code|one[-\s]?time\s*code|otp)[^\d]{0,30}(\d{4,8})/i,
+      /(?:code|pin)[^\d]{0,20}(\d{6})/i,
+      /\b(\d{6})\b/
+    ];
+    for (var i = 0; i < patterns.length; i++) {
+      var match = source.match(patterns[i]);
+      if (match && match[1]) return match[1];
+    }
+    return "";
+  }
+
+  /* ---------- toast ---------- */
+  function toast(message, isError) {
+    var el = $("toast");
+    if (!el) return;
+    setText(el, message);
+    el.classList.toggle("error", Boolean(isError));
+    el.classList.add("show");
+    clearTimeout(state.toastTimer);
+    state.toastTimer = setTimeout(function () {
+      el.classList.remove("show");
+    }, 3200);
+  }
+
+  function copyText(text, successMessage) {
+    var value = String(text || "");
+    function done() {
+      toast(successMessage || "已复制");
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(value).then(done).catch(function () {
+        fallbackCopy(value, done);
+      });
+    } else {
+      fallbackCopy(value, done);
+    }
+  }
+
+  function fallbackCopy(value, done) {
+    var area = document.createElement("textarea");
+    area.value = value;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.left = "-9999px";
+    area.style.top = "0";
+    document.body.appendChild(area);
+    area.select();
+    try {
+      document.execCommand("copy");
+      done();
+    } catch (error) {
+      toast("复制失败，请手动选择地址", true);
+    } finally {
+      document.body.removeChild(area);
+    }
+  }
+
+  /* ---------- UI: domains + session ---------- */
+  function populateDomains() {
+    var select = $("suffixSelect");
+    if (!select) return;
+    select.innerHTML = "";
+    DOMAINS.forEach(function (item) {
+      var option = document.createElement("option");
+      option.value = item.domain;
+      option.textContent = "@" + item.domain + " · " + (item.ttl ? "约 60 分钟" : "长期");
+      select.appendChild(option);
+    });
+  }
+
+  function setLoading(isLoading) {
+    state.creating = isLoading;
+    var button = $("createBtn");
+    if (!button) return;
+    button.classList.toggle("is-loading", isLoading);
+    button.disabled = isLoading;
+  }
+
+  function setHint(message, isError) {
+    var hint = $("prefixHint");
+    if (!hint) return;
+    setText(hint, message || "1–32 位字母、数字、点、下划线或短横线，不能以符号开头或结尾。");
+    hint.classList.toggle("error", Boolean(isError));
+  }
+
+  function setEmptyState(title, description, isError) {
+    var empty = $("emptyState");
+    if (!empty) return;
+    empty.classList.toggle("is-error", Boolean(isError));
+    var heading = empty.querySelector("h3");
+    var paragraph = empty.querySelector("p");
+    if (heading) setText(heading, title);
+    if (paragraph) setText(paragraph, description);
+  }
+
+  function showInbox(session) {
+    var card = $("inboxCard");
+    if (!card) return;
+    card.classList.remove("hidden");
+    setText($("addressText"), session.address);
+    setText($("providerNote"), (domainConfig(session.domain) || {}).note || "临时邮箱");
+    setText($("msgCount"), "0");
+    setText($("lastRefresh"), "等待收信");
+    setText($("expiry"), "");
+
+    var prefix = $("prefixInput");
+    if (prefix) prefix.value = session.local;
+    var suffix = $("suffixSelect");
+    if (suffix) suffix.value = session.domain;
+
+    document.title = session.address + " · TempBox";
+    updateExpiry();
+    startTicker();
+    startPolling();
+  }
+
+  function hideInbox() {
+    var card = $("inboxCard");
+    if (card) card.classList.add("hidden");
+    document.title = "TempBox · 临时邮局";
+  }
+
+  function clearSession() {
+    stopPolling();
+    stopTicker();
+    state.session = null;
+    state.messages = [];
+    state.readIds = new Set();
+    state.currentMessageId = null;
+    removeStorage(STORAGE_KEY);
+    hideInbox();
+    closeModal();
+    setText($("msgCount"), "0");
+    var list = $("messageList");
+    if (list) list.innerHTML = "";
+    setEmptyState("等待第一封邮件", "把上面的地址复制到需要注册的网站，邮件会自动出现在这里。", false);
+    var card = $("mailCard");
+    if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  /* ---------- UI: messages ---------- */
+  function renderMessages(messages) {
+    state.messages = messages;
+    var list = $("messageList");
+    if (!list) return;
+    var count = messages.length;
+    setText($("msgCount"), String(count));
+
+    if (!count) {
+      list.innerHTML = "";
+      var emptyState = $("emptyState");
+      if (emptyState) emptyState.classList.remove("hidden");
+      setEmptyState("等待第一封邮件", "把上面的地址复制到需要注册的网站，邮件会自动出现在这里。", false);
+      return;
+    }
+
+    setEmptyState("", "", false);
+    var empty = $("emptyState");
+    if (empty) empty.classList.add("hidden");
+
+    list.innerHTML = messages.map(function (message, index) {
+      var isRead = state.readIds.has(message.id) || message.read;
+      var sender = displaySender(message);
+      var email = senderEmail(message);
+      var subject = message.subject || "(无主题)";
+      var excerpt = message.excerpt || "点击查看邮件";
+      var badge = (state.session && state.session.provider === "guerrilla") ? "GM" : "MD";
+      var delay = Math.min(index * 35, 280);
+      return [
+        '<button type="button" class="message-item ' + (isRead ? "" : "is-unread") + '" data-id="' + escapeHtml(message.id) + '" role="listitem" style="animation-delay:' + delay + 'ms">',
+        '  <span class="message-dot" aria-hidden="true"></span>',
+        '  <span class="message-main">',
+        '    <span class="message-sender"><span class="sender-badge">' + badge + '</span><span title="' + escapeHtml(email) + '">' + escapeHtml(sender) + '</span></span>',
+        '    <span class="message-subject">' + escapeHtml(subject) + '</span>',
+        '    <span class="message-excerpt">' + escapeHtml(excerpt) + '</span>',
+        '  </span>',
+        '  <span class="message-side"><time datetime="' + escapeHtml(message.date.toISOString()) + '">' + escapeHtml(formatRelative(message.date)) + '</time>',
+        '  <svg class="message-arrow" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 4.5 12.5 10 7 15.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>',
+        '</button>'
+      ].join("");
+    }).join("");
+  }
+
+  function markMessageRead(id) {
+    state.readIds.add(String(id));
+    saveReadIds();
+    var item = document.querySelector('.message-item[data-id="' + cssEscape(String(id)) + '"]');
+    if (item) item.classList.remove("is-unread");
+    var message = state.messages.find(function (item) { return item.id === String(id); });
+    if (message) message.read = true;
+  }
+
+  function cssEscape(value) {
+    if (window.CSS && window.CSS.escape) return window.CSS.escape(value);
+    return String(value).replace(/["\\]/g, "\\$&");
+  }
+
+  /* ---------- inbox refresh ---------- */
+  function isExpired() {
+    if (!state.session) return false;
+    var config = domainConfig(state.session.domain);
+    if (!config || !config.ttl) return false;
+    return Date.now() > (state.session.providerCreatedAt || state.session.createdAt) + config.ttl;
+  }
+
+  function updateExpiry() {
+    var el = $("expiry");
+    if (!el) return;
+    if (!state.session) {
+      setText(el, "");
+      return;
+    }
+    var config = domainConfig(state.session.domain);
+    if (!config) {
+      setText(el, "");
+      return;
+    }
+    if (!config.ttl) {
+      setText(el, "长期有效");
+      el.classList.remove("is-warning");
+      return;
+    }
+
+    var expiresAt = (state.session.providerCreatedAt || state.session.createdAt) + config.ttl;
+    var remaining = expiresAt - Date.now();
+    setText(el, formatRemaining(remaining));
+    el.classList.toggle("is-warning", remaining <= 5 * 60 * 1000);
+  }
+
+  async function refreshInbox(options) {
+    var settings = options || {};
+    if (!state.session || state.refreshing) return;
+    if (isExpired()) {
+      updateExpiry();
+      if (settings.loud) toast("这个地址已经过期，请生成新邮箱", true);
+      return;
+    }
+
+    var provider = currentProvider();
+    if (!provider) return;
+
+    state.refreshing = true;
+    state.lastError = "";
+    var refreshBtn = $("refreshBtn");
+    if (refreshBtn) refreshBtn.classList.add("spinning");
+
+    try {
+      var messages = await provider.list(state.session);
+      var oldIds = new Set(state.messages.map(function (message) { return message.id; }));
+      var newMessages = messages.filter(function (message) { return !oldIds.has(message.id); });
+      renderMessages(messages);
+      setText($("lastRefresh"), "刚刚刷新 · " + formatClock(new Date()));
+
+      if (settings.loud) {
+        toast(messages.length ? "收件箱已刷新" : "收件箱还是空的");
+      } else if (newMessages.length && oldIds.size) {
+        toast("收到 " + newMessages.length + " 封新邮件");
+      }
+    } catch (error) {
+      state.lastError = error && error.message ? error.message : "网络请求失败";
+      if (!state.messages.length) {
+        setEmptyState("收件箱连接失败", "请检查网络后点刷新重试。如果持续失败，换一个后缀试试。", true);
+      }
+      if (settings.loud) toast(state.lastError, true);
+    } finally {
+      state.refreshing = false;
+      if (refreshBtn) refreshBtn.classList.remove("spinning");
+    }
+  }
+
+  function startPolling() {
+    stopPolling();
+    state.pollTimer = window.setInterval(function () {
+      if (document.visibilityState === "visible") refreshInbox({ loud: false });
+    }, POLL_INTERVAL);
+  }
+
+  function stopPolling() {
+    if (state.pollTimer) {
+      clearInterval(state.pollTimer);
+      state.pollTimer = null;
+    }
+  }
+
+  function startTicker() {
+    stopTicker();
+    state.tickTimer = window.setInterval(function () {
+      updateExpiry();
+    }, 1000);
+  }
+
+  function stopTicker() {
+    if (state.tickTimer) {
+      clearInterval(state.tickTimer);
+      state.tickTimer = null;
+    }
+  }
+
+  /* ---------- modal ---------- */
+  async function openMessage(id) {
+    var message = state.messages.find(function (item) { return item.id === String(id); });
+    if (!message || !state.session) return;
+    var provider = currentProvider();
+    if (!provider) return;
+
+    state.currentMessageId = String(id);
+    markMessageRead(id);
+
+    setText($("modalSubject"), message.subject || "(无主题)");
+    setText($("modalFrom"), displaySender(message));
+    setText($("modalDate"), formatFullDate(message.date));
+    $("codeBox").classList.add("hidden");
+    $("mailFrame").classList.add("hidden");
+    $("mailText").classList.add("hidden");
+    $("mailLoading").classList.remove("hidden");
+
+    var modal = $("messageModal");
+    modal.classList.remove("hidden");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    $("modalClose").focus();
+
+    try {
+      var detail = await provider.get(state.session, String(id));
+      if (state.currentMessageId !== String(id)) return;
+
+      if (detail.subject) setText($("modalSubject"), detail.subject);
+      if (detail.headerfrom || detail.from) setText($("modalFrom"), displaySender(detail));
+      if (detail.date) setText($("modalDate"), formatFullDate(detail.date));
+
+      var html = detail.html || "";
+      var text = detail.text || "";
+
+      if (html) {
+        var frame = $("mailFrame");
+        frame.srcdoc = buildMailDocument(html);
+        frame.classList.remove("hidden");
+      } else {
+        var pre = $("mailText");
+        setText(pre, text || "（这封邮件没有可显示的正文）");
+        pre.classList.remove("hidden");
+      }
+
+      var code = findVerificationCode(html ? stripHtml(html) : text);
+      if (code) {
+        setText($("codeValue"), code);
+        $("codeBox").classList.remove("hidden");
+      }
+    } catch (error) {
+      var pre = $("mailText");
+      setText(pre, "无法加载邮件正文：" + (error && error.message ? error.message : "请稍后重试"));
+      pre.classList.remove("hidden");
+    } finally {
+      $("mailLoading").classList.add("hidden");
+    }
+  }
+
+  function closeModal() {
+    var modal = $("messageModal");
+    if (!modal || modal.classList.contains("hidden")) return;
+    modal.classList.add("hidden");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+    var frame = $("mailFrame");
+    if (frame) frame.srcdoc = "";
+    state.currentMessageId = null;
+  }
+
+  /* ---------- create ---------- */
+  async function handleCreate(event) {
+    event.preventDefault();
+    if (state.creating) return;
+
+    var prefixInput = $("prefixInput");
+    var prefix = normalizePrefix(prefixInput ? prefixInput.value : "");
+    var error = validatePrefix(prefix);
+
+    if (error) {
+      setHint(error, true);
+      if (prefixInput) {
+        prefixInput.closest(".field").classList.add("has-error");
+        prefixInput.classList.remove("shake");
+        void prefixInput.offsetWidth;
+        prefixInput.classList.add("shake");
+        prefixInput.focus();
+      }
+      return;
+    }
+
+    setHint("");
+    if (prefixInput) prefixInput.closest(".field").classList.remove("has-error");
+
+    var domain = $("suffixSelect").value;
+    var config = domainConfig(domain);
+    if (!config) {
+      toast("请选择可用的邮箱后缀", true);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      var session = await providers[config.id].create(prefix, domain);
+      state.session = session;
+      state.messages = [];
+      state.readIds = loadReadIds(session.address);
+      saveSession(session);
+      showInbox(session);
+      renderMessages([]);
+      await refreshInbox({ loud: true });
+      var inbox = $("inboxCard");
+      if (inbox) inbox.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (networkError) {
+      var message = networkError && networkError.message ? networkError.message : "创建失败，请稍后重试";
+      setHint(message, true);
+      toast(message, true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /* ---------- events ---------- */
+  function bindEvents() {
+    $("createForm").addEventListener("submit", handleCreate);
+
+    $("randomBtn").addEventListener("click", function () {
+      var input = $("prefixInput");
+      if (!input) return;
+      input.value = randomPrefix();
+      input.closest(".field").classList.remove("has-error");
+      setHint("");
+      input.focus();
+    });
+
+    $("prefixInput").addEventListener("input", function () {
+      var input = $("prefixInput");
+      input.closest(".field").classList.remove("has-error");
+      setHint("");
+    });
+
+    $("copyBtn").addEventListener("click", function () {
+      if (!state.session) return;
+      copyText(state.session.address, "邮箱地址已复制");
+      var button = $("copyBtn");
+      var original = button.innerHTML;
+      button.textContent = "已复制";
+      setTimeout(function () {
+        button.innerHTML = original;
+      }, 1500);
+    });
+
+    $("refreshBtn").addEventListener("click", function () {
+      refreshInbox({ loud: true });
+    });
+
+    $("newBtn").addEventListener("click", function () {
+      clearSession();
+      var input = $("prefixInput");
+      if (input) {
+        input.value = randomPrefix();
+        input.focus();
+      }
+    });
+
+    $("messageList").addEventListener("click", function (event) {
+      var item = event.target.closest(".message-item");
+      if (!item) return;
+      openMessage(item.getAttribute("data-id"));
+    });
+
+    $("modalClose").addEventListener("click", closeModal);
+    $("messageModal").addEventListener("click", function (event) {
+      if (event.target.getAttribute("data-close") === "true") closeModal();
+    });
+
+    $("copyCodeBtn").addEventListener("click", function () {
+      copyText($("codeValue").textContent, "验证码已复制");
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") closeModal();
+    });
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible" && state.session) {
+        refreshInbox({ loud: false });
+      }
+    });
+  }
+
+  /* ---------- boot ---------- */
+  function boot() {
+    populateDomains();
+    bindEvents();
+
+    var saved = loadSession();
+    if (saved) {
+      state.session = saved;
+      state.readIds = loadReadIds(saved.address);
+      showInbox(saved);
+      refreshInbox({ loud: false });
+    } else {
+      var input = $("prefixInput");
+      if (input) input.value = randomPrefix();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+
+</script>
+</body>
+</html>
